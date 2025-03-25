@@ -25,6 +25,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.project.MavenProject;
+import pl.project13.log.MavenLogger;
 
 /**
  * Quick and dirty maven projects tree structure to create on disk during integration tests. Can
@@ -73,7 +74,9 @@ public class FileSystemMavenSandbox {
 
   @Nonnull
   public FileSystemMavenSandbox withGitRepoInParent(@Nonnull AvailableGitTestRepo repo) {
-    gitRepoSourceDir = repo.getDir();
+		MavenLogger.getLogger().info("Will prepare sandbox repository based on: [" + repo.getDir() + "]");
+		MavenLogger.getLogger().info(MavenLogger.getLogger().getClass().getName());
+		gitRepoSourceDir = repo.getDir();
     gitRepoTargetDir = parentProject.getBasedir();
     return this;
   }

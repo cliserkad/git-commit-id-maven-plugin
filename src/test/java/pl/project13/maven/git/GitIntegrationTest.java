@@ -36,13 +36,17 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.monitor.logging.DefaultLog;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
 import org.eclipse.jgit.api.Git;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.provider.Arguments;
+import org.slf4j.Logger;
+import org.slf4j.spi.SLF4JServiceProvider;
 import pl.project13.core.CommitIdPropertiesOutputFormat;
+import pl.project13.log.MavenLogger;
 
 /**
  * Base class for various Testcases to verify that the git-commit-id-plugin works properly.
@@ -83,6 +87,7 @@ public abstract class GitIntegrationTest {
     mavenSandbox = new FileSystemMavenSandbox(currSandbox);
     mojo = spy(GitCommitIdMojo.class);
     initializeMojoWithDefaults(mojo);
+		MavenLogger.bindToMojo(mojo);
   }
 
   @AfterEach

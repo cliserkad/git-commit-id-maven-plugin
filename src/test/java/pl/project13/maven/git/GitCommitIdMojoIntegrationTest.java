@@ -50,7 +50,7 @@ public class GitCommitIdMojoIntegrationTest extends GitIntegrationTest {
   @ParameterizedTest
   @MethodSource("useNativeGit")
   public void shouldIncludeExpectedProperties(boolean useNativeGit) throws Exception {
-    // given
+		// given
     mavenSandbox
         .withParentProject("my-jar-project", "jar")
         .withNoChildProject()
