@@ -87,7 +87,6 @@ public abstract class GitIntegrationTest {
     mavenSandbox = new FileSystemMavenSandbox(currSandbox);
     mojo = spy(GitCommitIdMojo.class);
     initializeMojoWithDefaults(mojo);
-		MavenLogger.bindToMojo(mojo);
   }
 
   @AfterEach

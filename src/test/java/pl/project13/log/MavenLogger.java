@@ -5,6 +5,7 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.logging.Log;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.event.Level;
 import org.slf4j.helpers.MessageFormatter;
 
 import org.slf4j.impl.MavenSimpleLogger;
@@ -21,37 +22,12 @@ import java.lang.reflect.Proxy;
  * Falls back to System.out if routing fails.
  */
 public class MavenLogger implements ILoggerFactory, InvocationHandler {
-	private static final MavenLogger INSTANCE = new MavenLogger();
 	private static final CombinedLogger PROXY = (CombinedLogger) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), new Class[] { CombinedLogger.class }, INSTANCE);
 
-	private Logger logger;
-	private AbstractMojo mojo;
-
-	private MavenLogger() {
-		this.mojo = null;
-		logger = new SimpleLoggerFactory().getLogger(MavenLogger.class.getName());
-	}
-
-	public static CombinedLogger bindToMojo(final AbstractMojo mojo) {
-		if(mojo == null)
-			throw new IllegalArgumentException(new NullPointerException("mojo may not be null"));
-		if(INSTANCE.mojo != mojo) {
-			mojo.getPluginContext().
-			mojo.setLog(PROXY);
-		}
-		return PROXY;
-	}
+	private static final Level OUTPUT_LEVEL = Level.INFO;
 
 	public static CombinedLogger getLogger() {
 		return PROXY;
-	}
-
-	private boolean isBound() {
-		return mojo != null;
-	}
-
-	private Object loggingObject() {
-		return mojo.getLog();
 	}
 
 	@Override
@@ -62,23 +38,15 @@ public class MavenLogger implements ILoggerFactory, InvocationHandler {
 
 		// reroute level checks to mojo logger
 		if(method.getName().matches("is(Trace|Debug|Info|Warn|Error)Enabled")) {
-			if(!isBound())
-				return true;
-			else {
-				final String methodName = method.getName().replace("Trace", "Debug");
-				return Logger.class.getMethod(methodName).invoke(loggingObject());
-			}
+			final String levelName = method.getName().substring(2).toUpperCase();
+			final int levelOrdinal = Level.valueOf(levelName).ordinal();
+			return OUTPUT_LEVEL.ordinal() >= levelOrdinal;
 		}
 
 		if(method.getName().matches("trace|debug|info|warn|error")) {
-			if(isBound()) {
-				final String methodName = method.getName().replace("trace", "debug");
-				Logger.class.getMethod(methodName, String.class).invoke(loggingObject(), formatIntercepted(method, args));
-				return null;
-			} else {
-				System.out.println("unbound " + formatIntercepted(method, args));
-				return null;
-			}
+			final String methodName = method.getName().replace("trace", "debug").toUpperCase();
+			System.out.println("[" + methodName + "]" + formatIntercepted(method, args));
+			return null;
 		}
 
 		System.out.println("Unhandled method: " + method.getName());
