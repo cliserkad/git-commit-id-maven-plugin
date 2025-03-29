@@ -51,6 +51,12 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
       - name: Build with Maven
         run: mvn clean verify javadoc:javadoc -B --no-transfer-progress
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{matrix.java_version}}-test-logs
+          path: |
+            target/surefire-reports/
+            !*.dumpstream
 
   integration-test:
     name: Run integration test with Java ${{ matrix.java_version }} and Maven ${{ matrix.maven_version }}
